@@ -183,36 +183,6 @@ function updateChart() {
 
 // RHEKA
 
-// async function loadCaseData() {
-//   const res = await fetch(`patient.json?nocache=${Date.now()}`);
-//   caseData = await res.json();
-//   const dropdown = document.getElementById("caseDropdown");
-//   caseData.forEach(d => {
-//     const option = document.createElement("option");
-//     option.value = d.caseid;
-//     option.textContent = `Case ${d.caseid}`;
-//     dropdown.appendChild(option);
-//   });
-
-//   dropdown.addEventListener("change", () => {
-//     const selectedId = parseInt(dropdown.value);
-//     selectedCase = caseData.find(d => d.caseid === selectedId);
-//     renderSurgeryInfo(selectedId);
-  
-//     if (orImage && selectedCase) {
-//       const sex = selectedCase.sex?.toLowerCase();
-//       orImage.src = sex === "f" ? "images/table-female.png" : "images/table-male.png";
-//     }
-  
-//     // 🔽 Scroll to the case explorer section
-//     const nextSection = document.getElementById("case-explorer");
-//     if (nextSection) {
-//       nextSection.scrollIntoView({ behavior: "smooth" });
-//     }
-//   });
-  
-// }
-
 async function loadCaseData() {
   const res = await fetch(`patient.json?nocache=${Date.now()}`);
   caseData = await res.json();
@@ -756,7 +726,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-//  VIKI PART
+//  VIKI 
 
 const VITALS_URL = 'vital_data.json';
 const PROXY_URL = 'proxy_drug_data.json';
@@ -774,16 +744,14 @@ const xSelect = d3.select('#param-x');
 const ySelect = d3.select('#param-y');
 
 const svg = d3.select('#scatterplot');
+svg.attr("width", 1200).attr("height", 600); // ← Add this here
+
 const tooltip2 = d3.select('#tooltip-heatmap');
 const heatmapSvg = d3.select('#heatmap');
 
 const margin2 = { top: 40, right: 40, bottom: 60, left: 60 };
-// const width = parseInt(svg.style('width')) - margin2.left - margin2.right;
-// const height = parseInt(svg.style('height')) - margin2.top - margin2.bottom;
 
-// const width = +svg.attr('width') - margin2.left - margin2.right;
-// const height = +svg.attr('height') - margin2.top - margin2.bottom;
-
+  
 let rawWidth = +svg.attr('width') || 800;
 let rawHeight = +svg.attr('height') || 500;
 let width = rawWidth - margin2.left - margin2.right;
@@ -853,7 +821,7 @@ Promise.all([d3.json(VITALS_URL), d3.json(PROXY_URL)]).then(
 
     const caseIDs = Object.keys(vitalData).sort((a, b) => +a - +b);
 
-    // 🔧 Add options to the dropdown
+    // Add options to the dropdown
     caseSelect2.html(null);
     caseIDs.forEach((id) => {
       caseSelect2.append('option')
@@ -861,7 +829,7 @@ Promise.all([d3.json(VITALS_URL), d3.json(PROXY_URL)]).then(
         .text(`Case ${id}`);
     });
 
-    // 🔧 Gather all unique parameter keys
+    // Gather all unique parameter keys
     const paramSet = new Set();
     caseIDs.forEach((c) => {
       if (vitalData[c]) Object.keys(vitalData[c]).forEach((k) => paramSet.add(k));
@@ -869,11 +837,11 @@ Promise.all([d3.json(VITALS_URL), d3.json(PROXY_URL)]).then(
     });
     allParamKeys = Array.from(paramSet).sort();
 
-    // 🔧 Compute correlation & draw heatmap
+    // Compute correlation & draw heatmap
     computeGlobalCorrelation(caseIDs);
     drawHeatmap();
 
-    // 🔧 Connect dropdown to scatterplot updates
+    // Connect dropdown to scatterplot updates
     caseSelect2.on('change', () => {
       updateParamOptions();
       plotScatter();
@@ -882,7 +850,7 @@ Promise.all([d3.json(VITALS_URL), d3.json(PROXY_URL)]).then(
     xSelect.on('change', plotScatter);
     ySelect.on('change', plotScatter);
 
-    // 🔧 Default to first case
+    // Default to first case
     caseSelect2.property('value', caseIDs[0]);
     updateParamOptions();
     plotScatter();
@@ -925,97 +893,6 @@ function updateParamOptions() {
     ySelect.property('value', allYOpts[1] ? allYOpts[1].value : allYOpts[0].value);
   }
 }
-
-// function plotScatter() {
-//   const caseID = caseSelect2.property('value');
-//   const paramX = xSelect.property('value');
-//   const paramY = ySelect.property('value');
-
-//   if (!caseID || !paramX || !paramY) return;
-
-//   const xRaw =
-//     (vitalData[caseID] && vitalData[caseID][paramX]) ||
-//     (proxyData[caseID] && proxyData[caseID][paramX]) ||
-//     [];
-//   const yRaw =
-//     (vitalData[caseID] && vitalData[caseID][paramY]) ||
-//     (proxyData[caseID] && proxyData[caseID][paramY]) ||
-//     [];
-
-//   const yMap = new Map(yRaw.map((d) => [d.time, +d.value]));
-
-//   const points = xRaw
-//     .map((d) => {
-//       const yv = yMap.get(d.time);
-//       return yv != null ? { t: d.time, x: +d.value, y: +yv } : null;
-//     })
-//     .filter((d) => d !== null);
-
-//   if (points.length === 0) {
-//     g.selectAll('.dot').remove();
-//     xAxisG.call(d3.axisBottom(xScale).ticks(0));
-//     yAxisG.call(d3.axisLeft(yScale).ticks(0));
-//     g.select('.x-label').text('');
-//     g.select('.y-label').text('');
-//     return;
-//   }
-
-//   const xVals = points.map((d) => d.x);
-//   const yVals = points.map((d) => d.y);
-//   xScale.domain([d3.min(xVals), d3.max(xVals)]).nice();
-//   yScale.domain([d3.min(yVals), d3.max(yVals)]).nice();
-
-//   xAxisG.transition().duration(200).call(d3.axisBottom(xScale).ticks(6));
-//   yAxisG.transition().duration(200).call(d3.axisLeft(yScale).ticks(6));
-
-//   g.select('.x-label').text(`${paramX} (t)`);
-//   g.select('.y-label').text(`${paramY} (t)`);
-
-//   const dots = g.selectAll('.dot').data(points, (d) => d.t);
-
-//   dots
-//     .enter()
-//     .append('circle')
-//     .attr('class', 'dot')
-//     .attr('cx', (d) => xScale(d.x))
-//     .attr('cy', (d) => yScale(d.y))
-//     .attr('r', 4)
-//     .attr('fill', '#1f77b4')
-//     .attr('opacity', 0.75)
-//     .on('mouseover', (event, d) => {
-//       const timeStr = formatSecondsToMMSS(d.t);
-//       tooltip2
-//         .style('visibility', 'visible')
-//         .html(`
-//           <div><strong>Time:</strong> ${timeStr}</div>
-//           <div><strong>${paramX}:</strong> ${d.x}</div>
-//           <div><strong>${paramY}:</strong> ${d.y}</div>
-//         `);
-//     })
-//     .on('mousemove', (event) => {
-//       tooltip2
-//         .style('top', event.pageY + 10 + 'px')
-//         .style('left', event.pageX + 10 + 'px');
-//     })
-//     .on('mouseout', () => {
-//       tooltip2.style('visibility', 'hidden');
-//     })
-//     .merge(dots)
-//     .transition()
-//     .duration(200)
-//     .attr('cx', (d) => xScale(d.x))
-//     .attr('cy', (d) => yScale(d.y));
-
-//   // EXIT
-//   dots
-//     .exit()
-//     .transition()
-//     .duration(200)
-//     .attr('r', 0)
-//     .remove();
-
-
-// }
 
 function plotScatter() {
   const svg = d3.select('#scatterplot');
