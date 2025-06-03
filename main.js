@@ -744,7 +744,7 @@ const xSelect = d3.select('#param-x');
 const ySelect = d3.select('#param-y');
 
 const svg = d3.select('#scatterplot');
-svg.attr("width", 1000).attr("height", 600); // ← Add this here
+svg.attr("width", 900).attr("height", 600); // ← Add this here
 
 const tooltip2 = d3.select('#tooltip-heatmap');
 const heatmapSvg = d3.select('#heatmap');
